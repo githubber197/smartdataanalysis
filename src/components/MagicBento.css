@@ -1,0 +1,26 @@
+.bento-container {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bento-button {
+  padding: 0.7rem 1.5rem;
+  background: linear-gradient(135deg, #b794f4, #7f00ff);
+  color: white;
+  font-weight: bold;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.bento-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(132, 0, 255, 0.6);
+}
+
+.bento-button.active {
+  background: linear-gradient(135deg, #ff7eb3, #ff758c);
+  box-shadow: 0 0 20px rgba(255, 118, 140, 0.7);
+}
