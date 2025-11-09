@@ -11,6 +11,7 @@ const GlobalClickSpark = ({
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext("2d");
 
     const resize = () => {
@@ -25,11 +26,11 @@ const GlobalClickSpark = ({
       sparksRef.current = sparksRef.current.filter((spark) => {
         const elapsed = timestamp - spark.startTime;
         if (elapsed > duration) return false;
-
         const progress = elapsed / duration;
         const eased = 1 - Math.pow(1 - progress, 3);
         const distance = eased * sparkRadius;
         const lineLength = sparkSize * (1 - progress);
+
         const x1 = spark.x + distance * Math.cos(spark.angle);
         const y1 = spark.y + distance * Math.sin(spark.angle);
         const x2 = spark.x + (distance + lineLength) * Math.cos(spark.angle);
@@ -41,19 +42,16 @@ const GlobalClickSpark = ({
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
-
         return true;
       });
-      requestAnimationFrame(draw);
+      if (sparksRef.current.length > 0) requestAnimationFrame(draw);
     };
-    requestAnimationFrame(draw);
 
     const handleClick = (e) => {
       const now = performance.now();
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-
       const newSparks = Array.from({ length: sparkCount }, (_, i) => ({
         x,
         y,
@@ -62,6 +60,7 @@ const GlobalClickSpark = ({
         color: `hsl(${Math.random() * 360}, 100%, 70%)`,
       }));
       sparksRef.current.push(...newSparks);
+      requestAnimationFrame(draw);
     };
 
     window.addEventListener("click", handleClick);
@@ -78,8 +77,8 @@ const GlobalClickSpark = ({
         position: "fixed",
         top: 0,
         left: 0,
-        width: "100%",
-        height: "100%",
+        width: "100vw",
+        height: "100vh",
         zIndex: 9999,
         pointerEvents: "none",
       }}

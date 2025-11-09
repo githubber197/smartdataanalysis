@@ -1,0 +1,55 @@
+.star-border-container {
+  position: relative;
+  display: inline-block;
+  border-radius: 12px;
+  overflow: hidden;
+  background: transparent;
+  padding: 2px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.15); /* subtle border */
+}
+
+.star-border-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(168, 85, 247, 0.1),
+    rgba(168, 85, 247, 0.5),
+    rgba(168, 85, 247, 0.8),
+    rgba(168, 85, 247, 0.5),
+    rgba(168, 85, 247, 0.1)
+  );
+  animation: spinBorder 12s ease-in-out infinite; /* ✅ slower + smooth easing */
+  transition: opacity 0.8s ease;
+  z-index: 0;
+  will-change: transform;
+  filter: blur(0.3px); /* subtle blend to hide loop edges */
+}
+
+.inner-content {
+  position: relative;
+  z-index: 1;
+  background: rgba(17, 24, 39, 0.95);
+  color: white;
+  border-radius: 10px;
+  padding: 12px 24px;
+  text-align: center;
+  font-weight: 500;
+  transition: background 0.4s ease, transform 0.3s ease;
+}
+
+.star-border-container:hover .inner-content {
+  background: rgba(31, 41, 55, 0.95);
+  transform: scale(1.03);
+}
+
+@keyframes spinBorder {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
