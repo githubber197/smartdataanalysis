@@ -1,18 +1,18 @@
 import React from "react";
-import Particles from "./Particles"; // ✅ Particles as background
+import Particles from "./Particles";
 
 const Hero = ({ onConnectClick, onLearnMoreClick }) => {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-white bg-black">
-      {/* ✅ Particles Background */}
+    <section className="relative flex flex-col items-center justify-center min-h-screen overflow-hidden text-white">
+      {/* Particles Background */}
       <Particles />
 
-      {/* Hero Content */}
-      <div className="relative z-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl p-10 text-center max-w-2xl">
+      {/* Hero Content — transparent glass effect */}
+      <div className="relative z-10 bg-transparent backdrop-blur-sm border border-white/10 rounded-3xl shadow-2xl p-10 text-center max-w-2xl">
         <h1 className="text-5xl font-extrabold mb-4 bg-gradient-to-r from-pink-500 to-purple-500 text-transparent bg-clip-text">
           Smart Data Analytics
         </h1>
-        <p className="text-gray-300 mb-6 leading-relaxed">
+        <p className="text-gray-200 mb-6 leading-relaxed">
           Empower your business with AI-driven insights — upload your data, clean it,
           visualize trends, and get predictive suggestions to boost your performance.
         </p>
