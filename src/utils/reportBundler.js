@@ -1,56 +1,38 @@
+// src/utils/reportBundler.js
 import JSZip from "jszip";
+import { getAllChartBlobs } from "./chartDownloader";
 
-export async function downloadFullReport(rawData, cleanedData) {
-  console.log("Bundling report...");
-
-  const zip = new JSZip();
-
-  // 1️⃣ Add CSV files
-  zip.file("raw_data.csv", convertToCSV(rawData));
-  zip.file("cleaned_data.csv", convertToCSV(cleanedData));
-
-  // 2️⃣ Add ALL charts (Chart.js canvases)
-  const chartImages = await exportAllCharts();
-
-  chartImages.forEach((img, index) => {
-    zip.file(`chart_${index + 1}.png`, img.split(",")[1], { base64: true });
-  });
-
-  // 3️⃣ Build zip file
-  const zipBlob = await zip.generateAsync({ type: "blob" });
-
-  // 4️⃣ Trigger browser download
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(zipBlob);
-  link.download = "report_bundle.zip";
-  link.click();
-
-  URL.revokeObjectURL(link.href);
-}
-
-/* -------------------------- CSV HELPER -------------------------- */
-function convertToCSV(data) {
+/** convert array of objects to CSV string */
+function convertToCSV(data = []) {
   if (!data || data.length === 0) return "";
-
   const keys = Object.keys(data[0]);
   const rows = [keys.join(",")];
-
-  data.forEach((row) => {
-    rows.push(keys.map((k) => JSON.stringify(row[k] || "")).join(","));
+  data.forEach(row => {
+    rows.push(keys.map(k => JSON.stringify(row[k] ?? "")).join(","));
   });
-
   return rows.join("\n");
 }
 
-/* ----------------------- CHART EXPORTER ------------------------- */
-async function exportAllCharts() {
-  const canvases = document.querySelectorAll("canvas");
-  const output = [];
+/** Create a ZIP with CSVs + chart images */
+export async function bundleReportAsZip({ rawData = [], cleanedData = [] } = {}) {
+  const zip = new JSZip();
+  zip.file("raw_data.csv", convertToCSV(rawData));
+  zip.file("cleaned_data.csv", convertToCSV(cleanedData));
 
-  for (const canvas of canvases) {
-    const img = canvas.toDataURL("image/png");
-    output.push(img);
-  }
+  const chartBlobs = await getAllChartBlobs();
+  chartBlobs.forEach((c, idx) => {
+    // filename safe
+    const name = `${c.id || "chart"}_${idx + 1}.png`;
+    zip.file(name, c.blob);
+  });
 
-  return output;
+  const blob = await zip.generateAsync({ type: "blob" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "sda_report_bundle.zip";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 }

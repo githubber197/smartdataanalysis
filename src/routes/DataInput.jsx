@@ -1,95 +1,117 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Papa from "papaparse";
-import VersionHistory from "../components/VersionHistory";
-import { saveVersion, clearAllVersions, saveTempVersion } from "../utils/versionStore";
 
-export default function DataInput({ rawData = [], setRawData, setCleanedData }) {
-  const [fileName, setFileName] = useState("");
+export default function DataInput({ rawData, setRawData, setCleanedData }) {
+  const inputRef = useRef();
+  const [preview, setPreview] = useState([]);
+  const [filename, setFilename] = useState("");
 
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Reset all stored versions
-    clearAllVersions();
-
-    setFileName(file.name);
-
+  const handleFile = (file) => {
+    setFilename(file.name);
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (result) => {
-        const parsed = result.data || [];
-
-        const keys = parsed.length ? Object.keys(parsed[0]) : [];
-        const normalized = parsed.map((r) => {
-          const out = {};
-          keys.forEach((k) => {
-            out[k] = r[k] === undefined ? null : r[k];
-          });
-          return out;
-        });
-
-        setRawData(normalized);
-        setCleanedData(JSON.parse(JSON.stringify(normalized)));
-
-        saveVersion("rawData", normalized);
+      dynamicTyping: false,
+      complete: (res) => {
+        setPreview(res.data.slice(0, 20));
+        setRawData(res.data);
+        setCleanedData([]);
       },
+      error: (err) => alert("CSV parse error: " + err.message),
     });
   };
 
-  const handleRevert = (data) => {
-    if (data) {
-      setRawData(data);
-      setCleanedData(JSON.parse(JSON.stringify(data)));
-    }
-  };
-
   return (
-    <div className="p-6 bg-white/5 rounded-2xl shadow-lg border border-purple-500/30 overflow-x-auto">
-      <h2 className="text-xl font-semibold mb-3 text-purple-400">📂 Import CSV Data</h2>
+    <section className="w-full flex justify-center mt-10">
+      <div className="w-full max-w-5xl bg-white dark:bg-gray-800 shadow-lg rounded-xl p-8 border border-gray-200 dark:border-gray-700">
+        
+        {/* HEADER */}
+        <h2 className="text-2xl font-semibold">Upload CSV</h2>
+        <p className="text-gray-500 dark:text-gray-400 mt-1">
+          Select a CSV file. We’ll preview the first 20 rows to help you begin cleaning.
+        </p>
 
-      <input
-        type="file"
-        accept=".csv"
-        onChange={handleFileUpload}
-        className="block w-full p-2 border border-purple-600 rounded-lg bg-black/20 text-gray-200 cursor-pointer"
-      />
+        {/* FILE BUTTONS */}
+        <div className="mt-6 flex gap-4 flex-wrap">
+          <input
+            ref={inputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files[0]) handleFile(e.target.files[0]);
+            }}
+          />
 
-      {fileName && <p className="mt-2 text-sm text-gray-400">Uploaded: {fileName}</p>}
-      <p className="mt-2 text-sm text-gray-400">Rows loaded: {rawData ? rawData.length : 0}</p>
+          <button
+            onClick={() => inputRef.current.click()}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md shadow-sm"
+          >
+            Choose CSV
+          </button>
 
-      {rawData.length > 0 && (
-        <div className="mt-4 overflow-auto max-h-96 border border-purple-500/20 rounded-lg">
-          <table className="min-w-full text-sm text-gray-300 border-collapse">
-            <thead className="bg-purple-800/30 text-purple-300 sticky top-0">
-              <tr>
-                {Object.keys(rawData[0]).map((key) => (
-                  <th key={key} className="px-3 py-2 border-b border-purple-700/30 text-left">
-                    {key}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {rawData.slice(0, 10).map((row, i) => (
-                <tr key={i} className="hover:bg-purple-900/10">
-                  {Object.values(row).map((val, j) => (
-                    <td key={j} className="px-3 py-1 border-b border-purple-700/10">
-                      {val === null || val === undefined ? "" : String(val)}
-                    </td>
+          <button
+            onClick={() => {
+              setRawData([]);
+              setPreview([]);
+              setFilename("");
+              setCleanedData([]);
+            }}
+            className="px-4 py-2 border border-gray-400 dark:border-gray-500 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            Clear
+          </button>
+        </div>
+
+        {/* FILENAME */}
+        <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
+          <span className="font-medium text-gray-700 dark:text-gray-300">Selected:</span>{" "}
+          {filename || "none"}
+        </div>
+
+        {/* PREVIEW */}
+        <div className="mt-6 overflow-auto max-h-[500px] border border-gray-200 dark:border-gray-700 rounded-lg">
+          {preview.length === 0 ? (
+            <div className="p-10 text-center text-gray-500 dark:text-gray-400">
+              No preview — upload a CSV.
+            </div>
+          ) : (
+            <table className="w-full text-sm table-auto border-collapse">
+              <thead className="bg-gray-50 dark:bg-gray-900/30 border-b border-gray-200 dark:border-gray-700">
+                <tr>
+                  {Object.keys(preview[0]).map((k) => (
+                    <th
+                      key={k}
+                      className="px-3 py-2 text-left font-medium text-gray-600 dark:text-gray-300"
+                    >
+                      {k}
+                    </th>
                   ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          {rawData.length > 10 && (
-            <p className="text-xs text-gray-500 text-center py-2">Showing first 10 rows of {rawData.length}</p>
+              </thead>
+
+              <tbody>
+                {preview.map((row, i) => (
+                  <tr
+                    key={i}
+                    className={`${
+                      i % 2 === 0
+                        ? "bg-white dark:bg-gray-800"
+                        : "bg-gray-50 dark:bg-gray-800/50"
+                    } border-b border-gray-200 dark:border-gray-700`}
+                  >
+                    {Object.keys(preview[0]).map((k) => (
+                      <td key={k} className="px-3 py-2 text-gray-700 dark:text-gray-200">
+                        {String(row[k] ?? "")}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
-      )}
-
-      <VersionHistory type="rawData" onRevert={handleRevert} />
-    </div>
+      </div>
+    </section>
   );
 }

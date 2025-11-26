@@ -1,12 +1,14 @@
-import './StarBorder.css';
+// src/components/StarBorder.jsx
+import React from "react";
 
-const StarBorder = ({ as: Component = 'button', className = '', children, ...rest }) => {
+/**
+ * Small pill/card wrapper your UI used in many places.
+ * Keeps previous props/children interface.
+ */
+export default function StarBorder({ children, className = "", onClick = ()=>{} }) {
   return (
-    <Component className={`star-border-container ${className}`} {...rest}>
-      <div className="star-border-glow"></div>
-      <div className="inner-content">{children}</div>
-    </Component>
+    <button onClick={onClick} className={`glass px-6 py-3 rounded-2xl text-sm font-medium ${className}`}>
+      {children}
+    </button>
   );
-};
-
-export default StarBorder;
+}

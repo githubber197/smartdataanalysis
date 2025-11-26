@@ -1,63 +1,90 @@
+// src/components/VersionHistory.jsx
 import React, { useState, useEffect } from "react";
 import { getVersions, revertVersion } from "../utils/versionStore";
-import { loadTempVersions } from "../utils/versionStore";
 
-export default function VersionHistory({ type, column = null, onRevert }) {
+export default function VersionHistory({ type, column, onRevert }) {
+  const [open, setOpen] = useState(false);
   const [versions, setVersions] = useState([]);
-  const [tempVersions, setTempVersions] = useState([]);
 
-  useEffect(() => {
-    setVersions(getVersions(type, column));
-    const temp = loadTempVersions();
-    const key = column ? `${type}_${column}` : type;
-    setTempVersions(temp[key] || []);
-  }, [type, column]);
-
-  const handleRevert = (index) => {
-    const reverted = revertVersion(type, index, column);
-    if (reverted && onRevert) onRevert(reverted);
+  const load = () => {
+    if (!column) return;
     setVersions(getVersions(type, column));
   };
 
-  if (versions.length === 0 && tempVersions.length === 0) return null;
+  useEffect(() => {
+    if (open) load();
+  }, [open, column]);
+
+  const handleRevert = (index) => {
+    const restored = revertVersion(type, column, index);
+    if (onRevert) onRevert(restored);
+    setOpen(false);
+  };
 
   return (
-    <div className="mt-4 p-3 bg-gray-800/40 border border-purple-500/20 rounded-lg text-sm">
-      <h3 className="font-semibold text-purple-400 mb-2">
-        {column ? `History: ${column}` : "Version History"}
-      </h3>
+    <>
+      {/* Open Button */}
+      <button
+        onClick={() => setOpen(true)}
+        className="px-3 py-2 rounded bg-gray-700 hover:bg-gray-600 text-white text-sm"
+      >
+        History
+      </button>
 
-      {/* TEMPORARY */}
-      {tempVersions.length > 0 && (
-        <>
-          <p className="text-red-400 text-xs mb-1">(Temporary — cleared on refresh)</p>
-          <ul className="space-y-1 mb-2">
-            {tempVersions.map((v, i) => (
-              <li key={i} className="text-gray-400 bg-gray-900/20 px-3 py-1 rounded">
-                {new Date(v.timestamp).toLocaleString()}
-              </li>
-            ))}
-          </ul>
-        </>
+      {/* BACKDROP — Only exists when open */}
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+        />
       )}
 
-      {/* Permanent */}
-      <ul className="space-y-1 max-h-40 overflow-y-auto">
-        {versions.map((v, i) => (
-          <li
-            key={i}
-            className="flex justify-between items-center text-gray-300 bg-gray-900/30 px-3 py-1 rounded-md hover:bg-gray-800/50"
-          >
-            <span>{new Date(v.timestamp).toLocaleString()}</span>
+      {/* DRAWER — Fully unmounted when closed */}
+      {open && (
+        <div
+          className="fixed top-0 right-0 h-full w-80 bg-gray-900 text-white z-50 shadow-xl
+                     transform transition-transform duration-300 translate-x-0"
+        >
+          {/* Header */}
+          <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+            <h3 className="font-semibold text-sm">Version History</h3>
             <button
-              onClick={() => handleRevert(i)}
-              className="text-xs bg-purple-600/70 px-2 py-1 rounded hover:bg-purple-700 transition"
+              onClick={() => setOpen(false)}
+              className="text-gray-400 hover:text-white text-xl leading-none"
             >
-              Revert
+              ×
             </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-4 space-y-3 overflow-y-auto h-[calc(100%-60px)]">
+            {versions.length === 0 && (
+              <p className="text-gray-500 text-sm">
+                No versions saved for this column.
+              </p>
+            )}
+
+            {versions.map((v, i) => (
+              <div
+                key={i}
+                className="p-3 border border-gray-700 rounded bg-gray-800/50"
+              >
+                <div className="font-semibold text-sm mb-1">Version {i + 1}</div>
+                <div className="text-xs text-gray-400 mb-2">
+                  {v.meta?.note || "Snapshot saved"}
+                </div>
+
+                <button
+                  onClick={() => handleRevert(i)}
+                  className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-xs rounded"
+                >
+                  Revert
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

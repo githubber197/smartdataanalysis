@@ -1,19 +1,27 @@
-import React from 'react'
-import { SparklesIcon } from '@heroicons/react/24/solid'
+import React from "react";
+import ThemeToggle from "./ThemeToggle";
 
-export default function Header(){
+export default function Header({ setActive }) {
   return (
-    <header className="bg-white rounded-xl p-6 shadow-sm border mb-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">🚀 Integrated Data Analytics Platform</h1>
-          <p className="text-sm text-gray-500">Database → Cleaning → Analytics → AI Insights → ML Predictions</p>
+    <header className="sticky top-0 z-40 backdrop-blur glass p-3">
+      <div className="app-container flex items-center justify-between gap-4">
+        <div className="flex items-center gap-6">
+          <div className="text-lg font-bold">Smart Data Analytics</div>
+          <nav className="hidden md:flex gap-3 text-sm">
+            <button onClick={()=>setActive("upload")} className="px-3 py-1 rounded hover:bg-white/5">Upload</button>
+            <button onClick={()=>setActive("clean")} className="px-3 py-1 rounded hover:bg-white/5">Cleaning</button>
+            <button onClick={()=>setActive("analytics")} className="px-3 py-1 rounded hover:bg-white/5">Analytics</button>
+            <button onClick={()=>setActive("dashboard")} className="px-3 py-1 rounded hover:bg-white/5">Dashboard</button>
+            <button onClick={()=>setActive("reports")} className="px-3 py-1 rounded hover:bg-white/5">Reports</button>
+          </nav>
         </div>
+
         <div className="flex items-center gap-3">
-          <button className="btn px-4 py-2 rounded-md bg-teal-600 text-white">Connect</button>
-          <SparklesIcon className="w-6 h-6 text-amber-500" />
+          <button onClick={()=>setActive("reports")} className="px-3 py-1 btn-primary hidden sm:inline-block">Quick Report</button>
+          <button onClick={()=>setActive("upload")} className="px-3 py-1 btn-ghost hidden sm:inline-block">Connect Data</button>
+          <ThemeToggle />
         </div>
       </div>
     </header>
-  )
+  );
 }

@@ -1,40 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@import "tailwindcss";
+/* glass tokens */
+:root {
+  --glass-bg: rgba(255,255,255,0.7);
+  --glass-border: rgba(0,0,0,0.06);
+  --glass-strong: rgba(0,0,0,0.09);
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  overflow-y: auto; /* allow page scroll */
-  background: #0f172a;
+  --accent-1: #8b5cf6;
+  --accent-2: #ec4899;
+  --muted: #6b7280;
 }
 
-/* Hide native scrollbar visuals without disabling scroll */
-body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  background: transparent;
-}
-body {
-  scrollbar-width: none; /* Firefox */
+[data-theme="dark"] {
+  --glass-bg: rgba(8,10,15,0.36);
+  --glass-border: rgba(255,255,255,0.04);
+  --glass-strong: rgba(255,255,255,0.06);
+  --muted: #9ca3af;
 }
 
-/* Scoped custom scrollbar for cleaning table only */
-.cleaning-scroll {
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #9b5de5 #1e1e2e;
+.glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.85), rgba(255,255,255,0.75));
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  box-shadow: 0 6px 30px rgba(2,6,23,0.08);
 }
 
-.cleaning-scroll::-webkit-scrollbar {
-  width: 8px;
+.badge-accent {
+  background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+  color: white;
 }
 
-.cleaning-scroll::-webkit-scrollbar-track {
-  background: #1e1e2e;
+.soft-text { color: var(--muted); }
+
+/* scrollbars */
+.glass-scroll::-webkit-scrollbar { height: 8px; width: 8px; }
+.glass-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 9999px; }
+
+/* container */
+.app-container { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+
+.chart-holder { min-height: 220px; height: 100%; }
+
+/* slight animation */
+@keyframes pulse-spark { 0% { transform: scale(0.98); opacity: 0.8; } 50% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(0.98); opacity: 0.8; } }
+.spark-pulse { animation: pulse-spark 2.2s infinite; }
+
+@keyframes fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-.cleaning-scroll::-webkit-scrollbar-thumb {
-  background-color: #9b5de5;
-  border-radius: 10px;
+.animate-fade {
+  animation: fade 0.35s ease;
 }
